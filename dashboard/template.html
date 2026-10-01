@@ -1,0 +1,206 @@
+<title>Balearic Tourism Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column monitor — header, filter row, KPI strip, 2x2 chart grid, comparison table, sources. */
+:root {
+  --bg: #f6f8fa; --surface: #ffffff; --fg: #10202e; --muted: #5a6b7a; --line: #dfe5ea;
+  --sea: #2a78d6; --compare: #eb6834; --spain: #6b7280; --good: #1baf7a; --peak: #2a78d6; --off: #eb6834;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e151c; --surface: #16202a; --fg: #e8eef3; --muted: #9aaab8; --line: #263443;
+  --sea: #3987e5; --compare: #d95926; --spain: #9ca3af; --good: #199e70; --peak: #3987e5; --off: #d95926; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --fg: #e8eef3; --muted: #9aaab8; --line: #263443;
+  --sea: #3987e5; --compare: #d95926; --spain: #9ca3af; --good: #199e70; --peak: #3987e5; --off: #d95926; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 48px; display: grid; gap: 22px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-size: clamp(28px, 4.5vw, 44px); line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.lede { color: var(--muted); max-width: 68ch; margin: 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; }
+.filters label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+select { font: 500 14px var(--body); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 200px; }
+select:focus-visible { outline: 2px solid var(--sea); outline-offset: 2px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+.kpi .v { font-family: var(--display); font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi .l { font-size: 13px; color: var(--muted); }
+.kpi .d { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.kpi .d b { color: var(--good); font-weight: 500; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 16px 8px; min-width: 0; display: grid; gap: 4px; }
+.card h2 { font-family: var(--display); font-size: 18px; margin: 0; }
+.card p { margin: 0; color: var(--muted); font-size: 13px; }
+.card.wide { grid-column: 1 / -1; }
+.chart { width: 100%; height: 300px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+tr.hl td { font-weight: 600; }
+tr.hl td:first-child { box-shadow: inset 3px 0 0 var(--sea); padding-left: 12px; }
+.bar { display: inline-block; height: 6px; border-radius: 3px; background: var(--sea); vertical-align: middle; margin-right: 6px; }
+footer { color: var(--muted); font-size: 13px; display: grid; gap: 4px; }
+footer a { color: var(--sea); }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Illes Balears · Official INE statistics · updated to <span id="lastMonth"></span></div>
+    <h1>Balearic Tourism Monitor</h1>
+    <p class="lede">How seasonal is the Balearic hotel market, is it still growing, and where is the room to grow? Hotel overnight stays (EOH), international arrivals (FRONTUR) and international spending (EGATUR), compared with Spain's other big destinations.</p>
+  </header>
+
+  <div class="filters">
+    <label for="cmp">Compare with
+      <select id="cmp"></select></label>
+    <label for="yr">Seasonality year
+      <select id="yr"></select></label>
+  </div>
+
+  <section class="kpis" id="kpis" aria-label="Key figures for the Balearic Islands"></section>
+
+  <section class="grid">
+    <div class="card wide">
+      <h2>Hotel overnight stays per month</h2>
+      <p>Balearic Islands vs the selected region, all guests. The 2020–21 collapse is COVID-19.</p>
+      <div class="chart" id="c1" role="img" aria-label="Monthly hotel overnight stays line chart"></div>
+    </div>
+    <div class="card">
+      <h2>Share of the year in each month</h2>
+      <p id="c2note">% of the year's hotel nights. A flat line means a year-round market.</p>
+      <div class="chart" id="c2" role="img" aria-label="Seasonality profile"></div>
+    </div>
+    <div class="card">
+      <h2>Growth by month, 2025 vs 2019</h2>
+      <p>Balearic hotel nights. Blue bars are the peak season (Jun–Sep).</p>
+      <div class="chart" id="c3" role="img" aria-label="Growth by month bar chart"></div>
+    </div>
+    <div class="card wide">
+      <h2>Volume vs value: international tourists and their spending</h2>
+      <p>Balearic Islands, index 2019 = 100. Spending in nominal euros.</p>
+      <div class="chart" id="c4" role="img" aria-label="Index of tourists and spending"></div>
+    </div>
+    <div class="card wide">
+      <h2>Spain's main destinations, 2025</h2>
+      <div class="tablewrap"><table id="tbl"></table></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>Source: Instituto Nacional de Estadística (INE) — EOH table 2074, FRONTUR 10823, EGATUR 10839. Hotels only; holiday rentals are not included.</div>
+    <div>Built by Roberto Bustamante Pérez with Python, DuckDB and SQL · <a href="https://github.com/robertobustamanteperez25-star/balearic-tourism" target="_blank" rel="noopener">Code on GitHub</a></div>
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.35.2/plotly-basic.min.js"></script>
+<script>
+const DATA = /*DATA*/null;
+const BAL = "Balearic Islands";
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmtM = (x, d = 1) => (x / 1e6).toLocaleString("en-GB", { maximumFractionDigits: d, minimumFractionDigits: d });
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const regions = Object.keys(DATA.monthly).filter((r) => r !== BAL);
+const rows = (r) => DATA.monthly[r];
+const yearTotal = (r, y, i = 2) => rows(r).filter((x) => x[0] === y).reduce((a, x) => a + x[i], 0);
+const intlYear = (r, y) => DATA.intl[r].find((x) => x[0] === y);
+const last = rows(BAL)[rows(BAL).length - 1];
+$("lastMonth").textContent = `${MONTHS[last[1] - 1]} ${last[0]}`;
+
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem("btm") || "{}"); } catch (e) {}
+regions.forEach((r) => $("cmp").add(new Option(r, r)));
+$("cmp").value = regions.includes(saved.cmp) ? saved.cmp : "Canary Islands";
+const fullYears = [...new Set(rows(BAL).map((x) => x[0]))].filter((y) => rows(BAL).filter((x) => x[0] === y).length === 12 && y !== 2020 && y !== 2021).reverse();
+fullYears.forEach((y) => $("yr").add(new Option(y, y)));
+$("yr").value = fullYears.includes(+saved.yr) ? saved.yr : fullYears[0];
+
+function kpis() {
+  const n25 = yearTotal(BAL, 2025), n19 = yearTotal(BAL, 2019), sp = yearTotal("Spain (total)", 2025);
+  const i25 = intlYear(BAL, 2025), i19 = intlYear(BAL, 2019);
+  const peak = rows(BAL).filter((x) => x[0] === 2025 && x[1] >= 6 && x[1] <= 9).reduce((a, x) => a + x[2], 0) / n25;
+  const ni = yearTotal(BAL, 2025, 3) / n25;
+  const pct = (a, b) => `${a >= b ? "+" : ""}${(100 * (a / b - 1)).toFixed(0)}%`;
+  const k = [
+    [fmtM(n25) + "M", "hotel nights in 2025", `<b>${pct(n25, n19)}</b> vs 2019 · ${(100 * n25 / sp).toFixed(0)}% of Spain`],
+    [fmtM(i25[1]) + "M", "international tourists", `<b>${pct(i25[1], i19[1])}</b> vs 2019`],
+    ["€" + (i25[2] / 1000).toFixed(1) + "bn", "international spending", `<b>${pct(i25[2], i19[2])}</b> vs 2019 (nominal)`],
+    ["€" + Math.round(1e6 * i25[2] / i25[1]).toLocaleString("en-GB"), "spend per tourist", `<b>${pct(i25[2] / i25[1], i19[2] / i19[1])}</b> vs 2019`],
+    [(100 * peak).toFixed(0) + "%", "of hotel nights in Jun–Sep", `${(100 * ni).toFixed(0)}% from international guests`],
+  ];
+  $("kpis").innerHTML = k.map(([v, l, d]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div><div class="d">${d}</div></div>`).join("");
+}
+
+function layout(extra = {}) {
+  const fg = css("--muted"), line = css("--line");
+  return Object.assign({
+    margin: { l: 52, r: 12, t: 8, b: 36 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)",
+    font: { family: "IBM Plex Sans, system-ui, sans-serif", size: 12, color: fg },
+    xaxis: { gridcolor: line, linecolor: line, zeroline: false },
+    yaxis: { gridcolor: line, linecolor: line, zeroline: false },
+    legend: { orientation: "h", y: 1.12, x: 0 }, hovermode: "x unified",
+    hoverlabel: { bgcolor: css("--surface"), bordercolor: line, font: { color: css("--fg") } },
+  }, extra);
+}
+const cfg = { displayModeBar: false, responsive: true };
+
+function draw() {
+  const cmp = $("cmp").value, yr = +$("yr").value;
+  try { localStorage.setItem("btm", JSON.stringify({ cmp, yr })); } catch (e) {}
+  const ser = (r, color) => ({
+    x: rows(r).map((x) => `${x[0]}-${String(x[1]).padStart(2, "0")}-01`), y: rows(r).map((x) => x[2]),
+    name: r, type: "scatter", mode: "lines", line: { width: 2, color }, hovertemplate: "%{y:,.0f}<extra>" + r + "</extra>",
+  });
+  Plotly.react("c1", [ser(BAL, css("--sea")), ser(cmp, css("--compare"))], layout({ yaxis: { gridcolor: css("--line"), tickformat: ".2s", title: { text: "nights" } } }), cfg);
+
+  const prof = (r) => { const t = yearTotal(r, yr); return rows(r).filter((x) => x[0] === yr).map((x) => 100 * x[2] / t); };
+  const pl = (r, color) => ({ x: MONTHS, y: prof(r), name: r, type: "scatter", mode: "lines+markers", line: { width: 2, color }, marker: { size: 7 }, hovertemplate: "%{y:.1f}%<extra>" + r + "</extra>" });
+  Plotly.react("c2", [pl(BAL, css("--sea")), pl(cmp, css("--compare"))], layout({ yaxis: { gridcolor: css("--line"), ticksuffix: "%", rangemode: "tozero" } }), cfg);
+  $("c2note").textContent = `% of ${yr}'s hotel nights in each month. A flat line means a year-round market.`;
+
+  const g = MONTHS.map((_, i) => {
+    const a = rows(BAL).find((x) => x[0] === 2025 && x[1] === i + 1)[2], b = rows(BAL).find((x) => x[0] === 2019 && x[1] === i + 1)[2];
+    return 100 * (a / b - 1);
+  });
+  Plotly.react("c3", [{ x: MONTHS, y: g, type: "bar", marker: { color: MONTHS.map((_, i) => i >= 5 && i <= 8 ? css("--peak") : css("--off")) },
+    text: g.map((v) => v.toFixed(0) + "%"), textposition: "outside", cliponaxis: false, hovertemplate: "%{x}: %{y:.1f}%<extra></extra>" }],
+    layout({ showlegend: false, hovermode: "closest", yaxis: { gridcolor: css("--line"), ticksuffix: "%", range: [0, Math.max(...g) * 1.2] } }), cfg);
+
+  const yrs = DATA.intl[BAL].filter((x) => x[3] === 12).map((x) => x[0]);
+  const b19 = intlYear(BAL, 2019);
+  const idx = (f) => yrs.map((y) => { const r = intlYear(BAL, y); return 100 * f(r) / f(b19); });
+  const il = (name, f, color) => ({ x: yrs, y: idx(f), name, type: "scatter", mode: "lines+markers", line: { width: 2, color }, marker: { size: 7 }, hovertemplate: "%{y:.0f}<extra>" + name + "</extra>" });
+  Plotly.react("c4", [il("International tourists", (r) => r[1], css("--sea")), il("Total spending", (r) => r[2], css("--compare")), il("Spending per tourist", (r) => r[2] / r[1], css("--good"))],
+    layout({ yaxis: { gridcolor: css("--line"), title: { text: "index 2019 = 100" } }, shapes: [{ type: "line", xref: "paper", x0: 0, x1: 1, y0: 100, y1: 100, line: { color: css("--muted"), width: 1, dash: "dot" } }] }), cfg);
+}
+
+function table() {
+  const all = [BAL, ...regions];
+  const r = all.map((reg) => {
+    const n = yearTotal(reg, 2025), n19 = yearTotal(reg, 2019), i = intlYear(reg, 2025);
+    const peak = rows(reg).filter((x) => x[0] === 2025 && x[1] >= 6 && x[1] <= 9).reduce((a, x) => a + x[2], 0) / n;
+    return { reg, n, g: 100 * (n / n19 - 1), t: i[1], s: i[2], spt: 1e6 * i[2] / i[1], peak: 100 * peak };
+  }).sort((a, b) => b.n - a.n);
+  $("tbl").innerHTML = `<thead><tr><th>Region</th><th>Hotel nights (M)</th><th>vs 2019</th><th>Intl tourists (M)</th><th>Intl spend (€bn)</th><th>€ per tourist</th><th>Nights in Jun–Sep</th></tr></thead><tbody>` +
+    r.map((x) => `<tr class="${x.reg === BAL ? "hl" : ""}"><td>${x.reg}</td><td>${fmtM(x.n)}</td><td>${x.g >= 0 ? "+" : ""}${x.g.toFixed(1)}%</td><td>${fmtM(x.t)}</td><td>${(x.s / 1000).toFixed(1)}</td><td>${Math.round(x.spt).toLocaleString("en-GB")}</td><td><span class="bar" style="width:${(x.peak * 0.8).toFixed(0)}px"></span>${x.peak.toFixed(0)}%</td></tr>`).join("") + "</tbody>";
+}
+
+kpis(); table();
+if (window.Plotly) {
+  draw();
+  $("cmp").addEventListener("change", draw);
+  $("yr").addEventListener("change", draw);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", draw);
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+} else {
+  document.querySelectorAll(".chart").forEach((el) => { el.style.height = "auto"; el.textContent = "Charts could not load (no connection to the chart library). The table below still shows the key figures."; });
+}
+</script>

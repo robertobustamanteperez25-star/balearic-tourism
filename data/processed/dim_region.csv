@@ -1,0 +1,8 @@
+region_key,region,is_island
+1,Andalusia,False
+2,Balearic Islands,True
+3,Canary Islands,True
+4,Catalonia,False
+5,Madrid,False
+6,Spain (total),False
+7,Valencian Community,False
